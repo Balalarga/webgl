@@ -1,41 +1,40 @@
-var vShaderText = [
-"precision mediup float;",
-"attribute vec2 vPosition;",
-"attribute vec3 vColor;",
-"varying vec3 fColor;",
-"void main(){",
-"	fColor = vColor;",
-"	glPosition = vec4(vPosition, 0.0, 1.0);",
-"}"].join('\n');
-var fShaderText = [
-"precision mediump float;",
-"varying vec3 fColor;",
-"void main(){",
-"	fColor = vec4(fColor, 1.0);",
-"}"].join('\n');
+var box;
+var renderer;
+var scene;
+var camera;
 
-
-var init = function(){
+function initGL(){
 	var canvas = document.getElementById("canvas");
-	canvas.width = window.innerWidth();
-	canvas.height = window.innerHeight();
+	renderer = new THREE.WebGLRenderer({canvas});
+	const fov = 75;
+	const aspect = canvas.width/canvas.height;
+	const near = 0.1;
+	const far = 5;
+	camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+	camera.position.z = 3;
+	scene = new THREE.Scene();
+	var boxGeometry = new THREE.BoxGeometry(1, 1, 1);
+	var boxMaretial = new THREE.MeshPhongMaterial({color: 0xff0000});
+
+	box = new THREE.Mesh(boxGeometry, boxMaretial);
+	scene.add(box);
+
+	var color = 0xffffff;
+	var intencity = 1;
+	var light = new THREE.DirectionalLight(color, intencity);
+	light.position.set(-2, 2, 4);
+	scene.add(light);
 	
-	var gl = canvas.getContext("webgl");
-	if(!gl){
-		gl = canvas.getContext("experimental-webgl"); 
-	}
-	if(!gl){
-		alert("Your browser does not support WebGL");
-		return;
-	}
-	gl.clearColor(0.7, 0.7, 0.7, 1.0);
-	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+	renderer.render(scene, camera);
+};
 
-}
+function frameUpdate(time){
+	time *= 0.001;
 
-function vShader(vPosition, vColor){
-	return {
-		fColor: vColor,
-		glPosition: [vPosition.x, vPosition.y, 0.0, 1.0];
-	};
-}
+	box.rotation.x = time/3;
+	box.rotation.y = time/6;
+
+	renderer.render(scene, camera);
+	requestAnimationFrame(frameUpdate);
+};
+requestAnimationFrame(frameUpdate);
